@@ -1,32 +1,48 @@
-// Reemplazá esta URL con la URL pública desplegada de tu Apps Script
-const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbww_NnNFD6TnITWaZgkolwsUc2Otc_EnGMnc8dLWsG6mZr8lZj778ozeQy2tUKCB5gL/exec';
+let usuariosJSON = [];
 
-export async function login(username, password) {
-  const response = await fetch(SCRIPT_URL, {
-    method: 'POST',
-    body: JSON.stringify({
-      action: 'login',
-      username,
-      password
-    }),
-    headers: {
-      'Content-Type': 'application/json'
-    }
-  });
-  return response.json();
+async function cargarUsuarios() {
+  const res = await fetch('usuarios.json');
+  usuariosJSON = await res.json();
 }
 
-export async function register(username, password) {
-  const response = await fetch(SCRIPT_URL, {
-    method: 'POST',
-    body: JSON.stringify({
-      action: 'register',
-      username,
-      password
-    }),
-    headers: {
-      'Content-Type': 'application/json'
-    }
-  });
-  return response.json();
+// Ejecutar al cargar
+document.addEventListener('DOMContentLoaded', cargarUsuarios);
+
+// Obtener usuarios guardados en LocalStorage
+function obtenerUsuariosLocales() {
+  return JSON.parse(localStorage.getItem('usuariosLocales') || '[]');
+}
+
+// Guardar usuarios nuevos en LocalStorage
+function guardarUsuarioLocal(usuario) {
+  const usuariosLocales = obtenerUsuariosLocales();
+  usuariosLocales.push(usuario);
+  localStorage.setItem('usuariosLocales', JSON.stringify(usuariosLocales));
+}
+
+function login() {
+  const usuario = document.getElementById('login-user').value;
+  const password = document.getElementById('login-pass').value;
+
+  const todos = [...usuariosJSON, ...obtenerUsuariosLocales()];
+  const existe = todos.find(u => u.usuario === usuario && u.password === password);
+
+  document.getElementById('mensaje').innerText = existe
+    ? 'Login exitoso ✅'
+    : 'Usuario o contraseña incorrectos ❌';
+}
+
+function registrar() {
+  const usuario = document.getElementById('register-user').value;
+  const password = document.getElementById('register-pass').value;
+
+  const yaExiste = [...usuariosJSON, ...obtenerUsuariosLocales()]
+    .some(u => u.usuario === usuario);
+
+  if (yaExiste) {
+    document.getElementById('mensaje').innerText = 'El usuario ya existe ❌';
+  } else {
+    guardarUsuarioLocal({ usuario, password });
+    document.getElementById('mensaje').innerText = 'Usuario registrado con éxito ✅';
+  }
 }
