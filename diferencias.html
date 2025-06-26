@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Diferencias de Conteo</title>
+  <link rel="stylesheet" href="css/styles.css" />
+  <script src="js/api.js" defer></script>
+  <script src="js/main.js" defer></script>
+  <script>
+    document.addEventListener('DOMContentLoaded', () => {
+      const user = sessionStorage.getItem('currentUser');
+      if (!user) {
+        location.href = 'index.html';
+        return;
+      }
+
+      document.getElementById('user-greeting').textContent = `Hola, ${user}`;
+      document.getElementById('logout-btn').addEventListener('click', () => {
+        sessionStorage.clear();
+        location.href = 'index.html';
+      });
+
+      calcularDiferencias();
+    });
+
+    function calcularDiferencias() {
+      const historial = JSON.parse(localStorage.getItem('historial') || '[]');
+
+      if (historial.length < 2) {
+        document.getElementById('tabla-diferencias').innerHTML = '<tr><td colspan="3">Se necesitan al menos dos conteos.</td></tr>';
+        return;
+      }
+
+      // Tomamos los dos últimos conteos finalizados
+      const recientes = historial.slice(-2);
+      const productosA = recientes[0].products || {};
+      const productosB = recientes[1].products || {};
+
+      const codigos = new Set([...Object.keys(productosA), ...Object.keys(productosB)]);
+      const tbody = document.getElementById('tabla-diferencias');
+      tbody.innerHTML = '';
+
+      codigos.forEach(codigo => {
+        const cantidadA = productosA[codigo] || 0;
+        const cantidadB = productosB[codigo] || 0;
+        const diferencia = cantidadB - cantidadA;
+
+        if (diferencia !== 0) {
+          const row = document.createElement('tr');
+          row.innerHTML = `
+            <td>${codigo}</td>
+            <td>${cantidadA}</td>
+            <td>${cantidadB}</td>
+            <td>${diferencia > 0 ? '+' : ''}${diferencia}</td>
+          `;
+          tbody.appendChild(row);
+        }
+      });
+    }
+  </script>
+</head>
+<body>
+
+  <div class="header">
+    <img src="assets/logo.png" alt="Logo del sistema" style="display: block; margin: 0 auto;" width="300">
+  </div>
+
+  <div class="container">
+    <div class="user-panel">
+      <span id="user-greeting">Hola, Usuario</span>
+      <button id="logout-btn" class="btn-danger">Cerrar Sesión</button>
+    </div>
+
+    <h2>Diferencias entre Últimos Conteos</h2>
+
+    <table style="width:100%; margin-top:15px;">
+      <thead>
+        <tr>
+          <th>Código</th>
+          <th>Conteo A</th>
+          <th>Conteo B</th>
+          <th>Diferencia</th>
+        </tr>
+      </thead>
+      <tbody id="tabla-diferencias">
+        <!-- resultados -->
+      </tbody>
+    </table>
+  </div>
+<button id="btn-volver-menu" onclick="location.href='menu.html'" title="Volver al Menú Principal">
+  🏠
+</button>
+
+</body>
+</html>

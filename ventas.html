@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Registrar Ventas</title>
+  <link rel="stylesheet" href="css/styles.css" />
+  <script src="js/api.js" defer></script>
+  <script src="js/main.js" defer></script>
+  <script>
+    document.addEventListener('DOMContentLoaded', () => {
+      const user = sessionStorage.getItem('currentUser');
+      if (!user) {
+        location.href = 'index.html';
+        return;
+      }
+
+      document.getElementById('user-greeting').textContent = `Hola, ${user}`;
+      document.getElementById('logout-btn').addEventListener('click', () => {
+        sessionStorage.clear();
+        location.href = 'index.html';
+      });
+
+      document.getElementById('registrar-btn').addEventListener('click', registrarVenta);
+    });
+
+    function registrarVenta() {
+      const codigo = document.getElementById('codigo').value.trim();
+      const cantidad = parseInt(document.getElementById('cantidad').value, 10);
+
+      if (!codigo || isNaN(cantidad)) {
+        alert('Ingresá un código válido y cantidad numérica.');
+        return;
+      }
+
+      const ventas = JSON.parse(localStorage.getItem('ventas') || '[]');
+      ventas.push({
+        codigo,
+        cantidad,
+        fecha: new Date().toISOString(),
+        usuario: sessionStorage.getItem('currentUser')
+      });
+
+      localStorage.setItem('ventas', JSON.stringify(ventas));
+      alert('Venta registrada.');
+      document.getElementById('codigo').value = '';
+      document.getElementById('cantidad').value = '';
+    }
+  </script>
+</head>
+<body>
+
+  <div class="header">
+    <img src="assets/logo.png" alt="Logo del sistema" style="display: block; margin: 0 auto;" width="300">
+  </div>
+
+  <div class="container">
+    <div class="user-panel">
+      <span id="user-greeting">Hola, Usuario</span>
+      <button id="logout-btn" class="btn-danger">Cerrar Sesión</button>
+    </div>
+
+    <h2>Registrar Venta</h2>
+
+    <div class="form-group">
+      <label for="codigo">Código del Producto</label>
+      <input type="text" id="codigo" placeholder="Ej: 123456789" />
+    </div>
+
+    <div class="form-group">
+      <label for="cantidad">Cantidad Vendida</label>
+      <input type="number" id="cantidad" placeholder="Ej: 5" />
+    </div>
+
+    <button id="registrar-btn" class="btn-success">Registrar Venta</button>
+  </div>
+<button id="btn-volver-menu" onclick="location.href='menu.html'" title="Volver al Menú Principal">
+  🏠
+</button>
+
+</body>
+</html>

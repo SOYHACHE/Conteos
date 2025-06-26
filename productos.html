@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Productos en Conteo</title>
+  <link rel="stylesheet" href="css/styles.css" />
+  <script src="js/api.js" defer></script>
+  <script src="js/main.js" defer></script>
+  <script>
+    let conteoActual;
+
+    document.addEventListener('DOMContentLoaded', () => {
+      const user = sessionStorage.getItem('currentUser');
+      if (!user) return location.href = 'index.html';
+
+      const conteo = sessionStorage.getItem('currentCount');
+      if (!conteo) return location.href = 'conteo.html';
+
+      conteoActual = JSON.parse(conteo);
+      document.getElementById('user-greeting').textContent = `Hola, ${user}`;
+      document.getElementById('tipo-conteo').textContent = `Tipo de conteo: ${conteoActual.countType.toUpperCase()}`;
+
+      document.getElementById('logout-btn').addEventListener('click', () => {
+        sessionStorage.clear();
+        location.href = 'index.html';
+      });
+
+      document.getElementById('agregar-btn').addEventListener('click', agregarProductoManual);
+      document.getElementById('guardar-btn').addEventListener('click', guardarConteo);
+
+      renderTabla();
+    });
+
+    function agregarProductoManual() {
+      const codigo = prompt('Código del producto (PLU o EAN):');
+      if (!codigo) return;
+
+      const cantidad = parseInt(prompt('Cantidad:'), 10);
+      if (isNaN(cantidad)) {
+        alert('Cantidad inválida.');
+        return;
+      }
+
+      if (!conteoActual.products[codigo]) {
+        conteoActual.products[codigo] = 0;
+      }
+
+      conteoActual.products[codigo] += cantidad;
+      renderTabla();
+    }
+
+    function renderTabla() {
+      const tbody = document.getElementById('tabla-productos');
+      tbody.innerHTML = '';
+
+      const codigos = Object.keys(conteoActual.products);
+      if (codigos.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="2" style="text-align: center;">Sin productos agregados.</td></tr>';
+        return;
+      }
+
+      codigos.forEach(codigo => {
+        const tr = document.createElement('tr');
+        tr.innerHTML = `
+          <td>${codigo}</td>
+          <td>${conteoActual.products[codigo]}</td>
+        `;
+        tbody.appendChild(tr);
+      });
+    }
+
+    function guardarConteo() {
+      conteoActual.status = 'finalizado';
+      const historial = JSON.parse(localStorage.getItem('historial') || '[]');
+      historial.push(conteoActual);
+      localStorage.setItem('historial', JSON.stringify(historial));
+      sessionStorage.removeItem('currentCount');
+      alert('Conteo guardado con éxito.');
+      location.href = 'menu.html';
+    }
+  </script>
+</head>
+<body>
+
+  <div class="header">
+    <img src="assets/logo.png" alt="Logo del sistema" style="display: block; margin: 0 auto;" width="300">
+  </div>
+
+  <div class="container">
+    <div class="user-panel">
+      <span id="user-greeting">Hola, Usuario</span>
+      <button id="logout-btn" class="btn-danger">Cerrar Sesión</button>
+    </div>
+
+    <h2 id="tipo-conteo">Tipo de conteo</h2>
+
+    <button id="agregar-btn" class="btn-success">Agregar Producto</button>
+    <button id="guardar-btn" class="btn-warning">Guardar Conteo</button>
+
+    <table style="width:100%; margin-top:15px;">
+      <thead>
+        <tr>
+          <th>Código</th>
+          <th>Cantidad</th>
+        </tr>
+      </thead>
+      <tbody id="tabla-productos">
+        <!-- productos agregados -->
+      </tbody>
+    </table>
+  </div>
+<button id="btn-volver-menu" onclick="location.href='menu.html'" title="Volver al Menú Principal">
+  🏠
+</button>
+
+</body>
+</html>
