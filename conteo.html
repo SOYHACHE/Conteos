@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Seleccionar Conteo</title>
+  <link rel="stylesheet" href="css/styles.css" />
+  <script src="js/api.js" defer></script>
+  <script src="js/main.js" defer></script>
+  <script>
+    document.addEventListener('DOMContentLoaded', () => {
+      const user = sessionStorage.getItem('currentUser');
+      if (!user) {
+        location.href = 'index.html';
+        return;
+      }
+
+      document.getElementById('user-greeting').textContent = `Hola, ${user}`;
+      document.getElementById('logout-btn').addEventListener('click', () => {
+        sessionStorage.clear();
+        location.href = 'index.html';
+      });
+
+      // Eventos de botones
+      document.getElementById('apertura-btn').addEventListener('click', () => iniciarConteo('apertura'));
+      document.getElementById('cruce-btn').addEventListener('click', () => iniciarConteo('cruce'));
+      document.getElementById('cierre-btn').addEventListener('click', () => iniciarConteo('cierre'));
+      document.getElementById('reposicion-btn').addEventListener('click', iniciarReposicion);
+    });
+
+    function iniciarConteo(tipo) {
+      const nuevoConteo = {
+        id: '_' + Math.random().toString(36).substr(2, 9),
+        countType: tipo,
+        date: new Date().toISOString(),
+        products: {},
+        status: 'inprocess',
+        createdBy: sessionStorage.getItem('currentUser')
+      };
+
+      sessionStorage.setItem('currentCount', JSON.stringify(nuevoConteo));
+      location.href = 'productos.html';
+    }
+
+    function iniciarReposicion() {
+      const tipo = prompt('¿Querés "sumar" o "restar" unidades?').toLowerCase();
+      const motivo = prompt('¿Motivo de reposición? (Ej: Rotura, Vencimiento, etc.)');
+
+      if (tipo !== 'sumar' && tipo !== 'restar') {
+        alert('Tipo inválido. Escribí "sumar" o "restar".');
+        return;
+      }
+
+      const reposicion = {
+        id: '_' + Math.random().toString(36).substr(2, 9),
+        countType: 'reposicion',
+        repositionType: tipo === 'sumar' ? 'add' : 'subtract',
+        repositionReason: motivo || 'Sin motivo',
+        date: new Date().toISOString(),
+        products: {},
+        status: 'inprocess',
+        createdBy: sessionStorage.getItem('currentUser')
+      };
+
+      sessionStorage.setItem('currentCount', JSON.stringify(reposicion));
+      location.href = 'productos.html';
+    }
+  </script>
+</head>
+<body>
+
+  <div class="header">
+    <img src="assets/logo.png" alt="Logo del sistema" style="display: block; margin: 0 auto;" width="300">
+  </div>
+
+  <div class="container">
+    <div class="user-panel">
+      <span id="user-greeting">Hola, Usuario</span>
+      <button id="logout-btn" class="btn-danger">Cerrar Sesión</button>
+    </div>
+
+    <h2>Seleccionar Tipo de Conteo</h2>
+    <div class="counter-type">
+      <button id="apertura-btn">Apertura (Turno mañana)</button>
+      <button id="cruce-btn">Cruce (Turno tarde)</button>
+      <button id="cierre-btn">Cierre (Turno noche)</button>
+      <button id="reposicion-btn">Reposición</button>
+    </div>
+  </div>
+
+</body>
+</html>
