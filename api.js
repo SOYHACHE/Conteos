@@ -1,41 +1,32 @@
-function crearAdminSiNoExiste() {
-  const usuarios = JSON.parse(localStorage.getItem('usuarios') || '{}');
-  if (!usuarios['admin']) {
-    usuarios['admin'] = { clave: 'admin123' };
-    localStorage.setItem('usuarios', JSON.stringify(usuarios));
-    console.log('Usuario admin creado con contraseña admin123');
-  }
+// Reemplazá esta URL con la URL pública desplegada de tu Apps Script
+const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbww_NnNFD6TnITWaZgkolwsUc2Otc_EnGMnc8dLWsG6mZr8lZj778ozeQy2tUKCB5gL/exec';
+
+export async function login(username, password) {
+  const response = await fetch(SCRIPT_URL, {
+    method: 'POST',
+    body: JSON.stringify({
+      action: 'login',
+      username,
+      password
+    }),
+    headers: {
+      'Content-Type': 'application/json'
+    }
+  });
+  return response.json();
 }
 
-// Llamar esta función al iniciar la app
-crearAdminSiNoExiste();
-
-const api = {
-  login(username, password) {
-    const usuarios = JSON.parse(localStorage.getItem('usuarios') || '{}');
-    const user = usuarios[username];
-
-    if (!user || user.clave !== password) {
-      throw new Error('Usuario o contraseña incorrectos');
+export async function register(username, password) {
+  const response = await fetch(SCRIPT_URL, {
+    method: 'POST',
+    body: JSON.stringify({
+      action: 'register',
+      username,
+      password
+    }),
+    headers: {
+      'Content-Type': 'application/json'
     }
-
-    return { success: true };
-  },
-
-  register(username, password) {
-    if (!username || !password) {
-      throw new Error('Nombre de usuario y contraseña requeridos.');
-    }
-
-    const usuarios = JSON.parse(localStorage.getItem('usuarios') || '{}');
-
-    if (usuarios[username]) {
-      throw new Error('El usuario ya existe.');
-    }
-
-    usuarios[username] = { clave: password };
-    localStorage.setItem('usuarios', JSON.stringify(usuarios));
-
-    return { success: true };
-  }
-};
+  });
+  return response.json();
+}
