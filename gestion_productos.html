@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Gestión de Productos</title>
+  <link rel="stylesheet" href="css/styles.css" />
+  <script src="js/api.js" defer></script>
+  <script src="js/main.js" defer></script>
+  <script>
+    let productos = {};
+
+    document.addEventListener('DOMContentLoaded', () => {
+      const user = sessionStorage.getItem('currentUser');
+      if (!user) {
+        location.href = 'index.html';
+        return;
+      }
+
+      document.getElementById('user-greeting').textContent = `Hola, ${user}`;
+      document.getElementById('logout-btn').addEventListener('click', () => {
+        sessionStorage.clear();
+        location.href = 'index.html';
+      });
+
+      document.getElementById('agregar-producto').addEventListener('click', agregarProducto);
+      document.getElementById('eliminar-producto').addEventListener('click', eliminarProducto);
+
+      cargarProductos();
+      renderProductos();
+    });
+
+    function cargarProductos() {
+      productos = JSON.parse(localStorage.getItem('productos') || '{}');
+    }
+
+    function guardarProductos() {
+      localStorage.setItem('productos', JSON.stringify(productos));
+      renderProductos();
+    }
+
+    function agregarProducto() {
+      const codigo = document.getElementById('codigo-producto').value.trim();
+      const nombre = document.getElementById('nombre-producto').value.trim();
+
+      if (!codigo || !nombre) {
+        alert('Debes completar ambos campos.');
+        return;
+      }
+
+      if (productos[codigo]) {
+        alert('Ese código ya existe.');
+        return;
+      }
+
+      productos[codigo] = { nombre };
+      guardarProductos();
+
+      document.getElementById('codigo-producto').value = '';
+      document.getElementById('nombre-producto').value = '';
+    }
+
+    function eliminarProducto() {
+      const codigo = prompt('Código del producto a eliminar:');
+      if (codigo && productos[codigo]) {
+        if (confirm(`¿Eliminar el producto "${productos[codigo].nombre}"?`)) {
+          delete productos[codigo];
+          guardarProductos();
+        }
+      } else {
+        alert('Producto no encontrado.');
+      }
+    }
+
+    function renderProductos() {
+      const tabla = document.getElementById('lista-productos');
+      tabla.innerHTML = '';
+
+      const codigos = Object.keys(productos);
+      if (codigos.length === 0) {
+        tabla.innerHTML = '<tr><td colspan="2">No hay productos cargados.</td></tr>';
+        return;
+      }
+
+      codigos.sort().forEach(codigo => {
+        const tr = document.createElement('tr');
+        tr.innerHTML = `
+          <td>${codigo}</td>
+          <td>${productos[codigo].nombre}</td>
+        `;
+        tabla.appendChild(tr);
+      });
+    }
+  </script>
+</head>
+<body>
+
+  <div class="header">
+    <img src="assets/logo.png" alt="Logo del sistema" style="display: block; margin: 0 auto;" width="300">
+  </div>
+
+  <div class="container">
+    <div class="user-panel">
+      <span id="user-greeting">Hola, Usuario</span>
+      <button id="logout-btn" class="btn-danger">Cerrar Sesión</button>
+    </div>
+
+    <h2>Gestión de Productos</h2>
+
+    <div class="form-group">
+      <label for="codigo-producto">Código (PLU o EAN)</label>
+      <input type="text" id="codigo-producto" placeholder="Ej: 123456" />
+    </div>
+    <div class="form-group">
+      <label for="nombre-producto">Nombre</label>
+      <input type="text" id="nombre-producto" placeholder="Ej: Jabón Líquido" />
+    </div>
+    <button id="agregar-producto" class="btn-success">Agregar Producto</button>
+    <button id="eliminar-producto" class="btn-danger">Eliminar Producto</button>
+
+    <h3 style="margin-top:20px;">Lista de Productos</h3>
+    <table style="width:100%; margin-top:10px;">
+      <thead>
+        <tr>
+          <th>Código</th>
+          <th>Nombre</th>
+        </tr>
+      </thead>
+      <tbody id="lista-productos">
+        <!-- productos cargados -->
+      </tbody>
+    </table>
+  </div>
+
+  <!-- Botón flotante de volver -->
+  <button id="btn-volver-menu" onclick="location.href='menu.html'" title="Volver al Menú Principal">🏠</button>
+
+</body>
+</html>
